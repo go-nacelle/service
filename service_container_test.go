@@ -1,180 +1,177 @@
 package service
 
 import (
-	"fmt"
+	"testing"
 
-	"github.com/aphistic/sweet"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
 )
 
-type ServiceContainerSuite struct{}
-
-func (s *ServiceContainerSuite) TestGetAndSet(t sweet.T) {
+func TestServiceContainerGetAndSet(t *testing.T) {
 	container := NewServiceContainer()
 	container.Set("a", &IntWrapper{10})
 	container.Set("b", &FloatWrapper{3.14})
 	container.Set("c", &IntWrapper{25})
 
 	value1, err1 := container.Get("a")
-	Expect(err1).To(BeNil())
-	Expect(value1).To(Equal(&IntWrapper{10}))
+	assert.Nil(t, err1)
+	assert.Equal(t, &IntWrapper{10}, value1)
 
 	value2, err2 := container.Get("b")
-	Expect(err2).To(BeNil())
-	Expect(value2).To(Equal(&FloatWrapper{3.14}))
+	assert.Nil(t, err2)
+	assert.Equal(t, &FloatWrapper{3.14}, value2)
 
 	value3, err3 := container.Get("c")
-	Expect(err3).To(BeNil())
-	Expect(value3).To(Equal(&IntWrapper{25}))
+	assert.Nil(t, err3)
+	assert.Equal(t, &IntWrapper{25}, value3)
 }
 
-func (s *ServiceContainerSuite) TestInject(t sweet.T) {
+func TestServiceContainerInject(t *testing.T) {
 	container := NewServiceContainer()
 	container.Set("value", &IntWrapper{42})
 	obj := &TestSimpleProcess{}
 	err := container.Inject(obj)
-	Expect(err).To(BeNil())
-	Expect(obj.Value.val).To(Equal(42))
+	assert.Nil(t, err)
+	assert.Equal(t, 42, obj.Value.val)
 }
 
-func (s *ServiceContainerSuite) TestInjectNonPointer(t sweet.T) {
+func TestServiceContainerInjectNonPointer(t *testing.T) {
 	container := NewServiceContainer()
 	container.Set("value", IntWrapper{42})
 	obj := &TestSimpleNonPointer{}
 	err := container.Inject(obj)
-	Expect(err).To(BeNil())
-	Expect(obj.Value.val).To(Equal(42))
+	assert.Nil(t, err)
+	assert.Equal(t, 42, obj.Value.val)
 }
 
-func (s *ServiceContainerSuite) TestInjectAnonymous(t sweet.T) {
+func TestServiceContainerInjectAnonymous(t *testing.T) {
 	container := NewServiceContainer()
 	container.Set("value", &IntWrapper{42})
 	obj := &TestAnonymousSimpleProcess{&TestSimpleProcess{}}
 	err := container.Inject(obj)
-	Expect(err).To(BeNil())
-	Expect(obj.Value.val).To(Equal(42))
+	assert.Nil(t, err)
+	assert.Equal(t, 42, obj.Value.val)
 }
 
-func (s *ServiceContainerSuite) TestInjectAnonymousZeroValue(t sweet.T) {
+func TestServiceContainerInjectAnonymousZeroValue(t *testing.T) {
 	container := NewServiceContainer()
 	container.Set("value", &IntWrapper{42})
 	obj := &TestAnonymousSimpleProcess{}
 	err := container.Inject(obj)
-	Expect(err).To(BeNil())
-	Expect(obj.Value.val).To(Equal(42))
+	assert.Nil(t, err)
+	assert.Equal(t, 42, obj.Value.val)
 }
 
-func (s *ServiceContainerSuite) TestInjectAnonymousNonPointer(t sweet.T) {
+func TestServiceContainerInjectAnonymousNonPointer(t *testing.T) {
 	container := NewServiceContainer()
 	container.Set("value", &IntWrapper{42})
 	obj := &TestAnonymousNonPointerSimpleProcess{}
 	err := container.Inject(obj)
-	Expect(err).To(BeNil())
-	Expect(obj.Value.val).To(Equal(42))
+	assert.Nil(t, err)
+	assert.Equal(t, 42, obj.Value.val)
 }
 
-func (s *ServiceContainerSuite) TestInjectAnonymousDeepNonPointer(t sweet.T) {
+func TestServiceContainerInjectAnonymousDeepNonPointer(t *testing.T) {
 	container := NewServiceContainer()
 	container.Set("value", &IntWrapper{42})
 	obj := &TestAnonymousDeepNonPointerSimpleProcess{}
 	err := container.Inject(obj)
-	Expect(err).To(BeNil())
-	Expect(obj.Value.val).To(Equal(42))
+	assert.Nil(t, err)
+	assert.Equal(t, 42, obj.Value.val)
 }
 
-func (s *ServiceContainerSuite) TestInjectAnonymousZeroValueNoServiceTags(t sweet.T) {
+func TestServiceContainerInjectAnonymousZeroValueNoServiceTags(t *testing.T) {
 	container := NewServiceContainer()
 	container.Set("value", &IntWrapper{42})
 	obj := &TestAnonymousNoServiceTags{}
 	err := container.Inject(obj)
-	Expect(err).To(BeNil())
-	Expect(obj.IntWrapper).To(BeNil())
+	assert.Nil(t, err)
+	assert.Nil(t, obj.IntWrapper)
 }
 
-func (s *ServiceContainerSuite) TestInjectAnonymousUnexported(t sweet.T) {
+func TestServiceContainerInjectAnonymousUnexported(t *testing.T) {
 	container := NewServiceContainer()
 	container.Set("value", &IntWrapper{42})
 	obj := &TestAnonymousUnexportedProcess{&privateProcess{}}
 	err := container.Inject(obj)
-	Expect(err).To(BeNil())
-	Expect(obj.privateProcess.Value).To(BeNil())
+	assert.Nil(t, err)
+	assert.Nil(t, obj.privateProcess.Value)
 }
 
-func (s *ServiceContainerSuite) TestInjectNonStruct(t sweet.T) {
+func TestServiceContainerInjectNonStruct(t *testing.T) {
 	container := NewServiceContainer()
 	obj := func() error { return nil }
 	err := container.Inject(obj)
-	Expect(err).To(BeNil())
+	assert.Nil(t, err)
 }
 
-func (s *ServiceContainerSuite) TestInjectMissingService(t sweet.T) {
+func TestServiceContainerInjectMissingService(t *testing.T) {
 	container := NewServiceContainer()
 	obj := &TestSimpleProcess{}
 	err := container.Inject(obj)
-	Expect(err).To(MatchError("no service registered to key `value`"))
+	assert.EqualError(t, err, "no service registered to key `value`")
 }
 
-func (s *ServiceContainerSuite) TestInjectBadType(t sweet.T) {
+func TestServiceContainerInjectBadType(t *testing.T) {
 	container := NewServiceContainer()
 	container.Set("value", &FloatWrapper{3.14})
 	obj := &TestSimpleProcess{}
 	err := container.Inject(obj)
-	Expect(err).To(MatchError("field 'Value' cannot be assigned a value of type *service.FloatWrapper"))
+	assert.EqualError(t, err, "field 'Value' cannot be assigned a value of type *service.FloatWrapper")
 }
 
-func (s *ServiceContainerSuite) TestInjectNil(t sweet.T) {
+func TestServiceContainerInjectNil(t *testing.T) {
 	container := NewServiceContainer()
 	container.Set("value", nil)
 	obj := &TestNonPointerField{}
 	err := container.Inject(obj)
-	Expect(err).To(MatchError("field 'Value' cannot be assigned a value of type nil"))
+	assert.EqualError(t, err, "field 'Value' cannot be assigned a value of type nil")
 }
 
-func (s *ServiceContainerSuite) TestInjectOptional(t sweet.T) {
+func TestServiceContainerInjectOptional(t *testing.T) {
 	container := NewServiceContainer()
 	obj := &TestOptionalServiceProcess{}
 	err := container.Inject(obj)
-	Expect(err).To(BeNil())
-	Expect(obj.Value).To(BeNil())
+	assert.Nil(t, err)
+	assert.Nil(t, obj.Value)
 
 	container.Set("value", &IntWrapper{42})
 	err = container.Inject(obj)
-	Expect(err).To(BeNil())
-	Expect(obj.Value.val).To(Equal(42))
+	assert.Nil(t, err)
+	assert.Equal(t, 42, obj.Value.val)
 }
 
-func (s *ServiceContainerSuite) TestInjectBadOptional(t sweet.T) {
+func TestServiceContainerInjectBadOptional(t *testing.T) {
 	container := NewServiceContainer()
 	obj := &TestBadOptionalServiceProcess{}
 	err := container.Inject(obj)
-	Expect(err).To(MatchError("field 'Value' has an invalid optional tag"))
+	assert.EqualError(t, err, "field 'Value' has an invalid optional tag")
 }
 
-func (s *ServiceContainerSuite) TestUnsettableFields(t sweet.T) {
+func TestServiceContainerUnsettableFields(t *testing.T) {
 	container := NewServiceContainer()
 	container.Set("value", &IntWrapper{42})
 	err := container.Inject(&TestUnsettableService{})
-	Expect(err).To(MatchError("field 'value' can not be set - it may be unexported"))
+	assert.EqualError(t, err, "field 'value' can not be set - it may be unexported")
 }
 
-func (s *ServiceContainerSuite) TestPostInject(t sweet.T) {
+func TestServiceContainerPostInject(t *testing.T) {
 	container := NewServiceContainer()
 	obj := &SimplePostInjectProcess{}
 	container.Set("value", &IntWrapper{42})
 	err := container.Inject(obj)
-	Expect(err).To(BeNil())
-	Expect(obj.FValue.val).To(Equal(42.0))
+	assert.Nil(t, err)
+	assert.Equal(t, 42.0, obj.FValue.val)
 }
 
-func (s *ServiceContainerSuite) TestPostInjectError(t sweet.T) {
+func TestServiceContainerPostInjectError(t *testing.T) {
 	container := NewServiceContainer()
 	obj := &ErrorPostInjectProcess{}
 	container.Set("value", &IntWrapper{42})
 	err := container.Inject(obj)
-	Expect(err).To(MatchError("oops"))
+	assert.EqualError(t, err, "oops")
 }
 
-func (s *ServiceContainerSuite) TestPostInjectChain(t sweet.T) {
+func TestServiceContainerPostInjectChain(t *testing.T) {
 	container := NewServiceContainer()
 	obj := &RootInjectProcess{}
 	process := &SimplePostInjectProcess{}
@@ -184,123 +181,34 @@ func (s *ServiceContainerSuite) TestPostInjectChain(t sweet.T) {
 	container.Set("services", container)
 
 	err := container.Inject(obj)
-	Expect(err).To(BeNil())
-	Expect(process.FValue.val).To(Equal(42.0))
+	assert.Nil(t, err)
+	assert.Equal(t, 42.0, process.FValue.val)
 }
 
-func (s *ServiceContainerSuite) TestDuplicateRegistration(t sweet.T) {
+func TestServiceContainerDuplicateRegistration(t *testing.T) {
 	container := NewServiceContainer()
 	err1 := container.Set("dup", struct{}{})
 	err2 := container.Set("dup", struct{}{})
-	Expect(err1).To(BeNil())
-	Expect(err2).To(MatchError("duplicate service key `dup`"))
+	assert.Nil(t, err1)
+	assert.EqualError(t, err2, "duplicate service key `dup`")
 }
 
-func (s *ServiceContainerSuite) TestGetUnregisteredKey(t sweet.T) {
+func TestServiceContainerGetUnregisteredKey(t *testing.T) {
 	container := NewServiceContainer()
 	_, err := container.Get("unregistered")
-	Expect(err).To(MatchError("no service registered to key `unregistered`"))
+	assert.EqualError(t, err, "no service registered to key `unregistered`")
 }
 
-func (s *ServiceContainerSuite) TestMustSetPanics(t sweet.T) {
-	Expect(func() {
+func TestServiceContainerMustSetPanics(t *testing.T) {
+	assert.Panics(t, func() {
 		container := NewServiceContainer()
 		container.MustSet("unregistered", struct{}{})
 		container.MustSet("unregistered", struct{}{})
-	}).To(Panic())
+	})
 }
 
-func (s *ServiceContainerSuite) TestMustGetPanics(t sweet.T) {
-	Expect(func() {
+func TestServiceContainerMustGetPanics(t *testing.T) {
+	assert.Panics(t, func() {
 		NewServiceContainer().MustGet("unregistered")
-	}).To(Panic())
-}
-
-//
-// Fixtures
-
-type (
-	IntWrapper struct {
-		val int
-	}
-
-	FloatWrapper struct {
-		val float64
-	}
-
-	TestSimpleNonPointer struct {
-		Value IntWrapper `service:"value"`
-	}
-
-	TestSimpleProcess struct {
-		Value *IntWrapper `service:"value"`
-	}
-
-	TestAnonymousSimpleProcess struct {
-		*TestSimpleProcess
-	}
-
-	TestAnonymousNonPointerSimpleProcess struct {
-		TestSimpleProcess
-	}
-
-	TestAnonymousDeepNonPointerSimpleProcess struct {
-		TestSimpleProcess
-	}
-
-	TestAnonymousNoServiceTags struct {
-		*IntWrapper
-	}
-
-	TestAnonymousUnexportedProcess struct {
-		*privateProcess
-	}
-
-	privateProcess struct {
-		Value *IntWrapper `service:"value"`
-	}
-
-	TestUnsettableService struct {
-		value *IntWrapper `service:"value"`
-	}
-
-	TestNonPointerField struct {
-		Value IntWrapper `service:"value"`
-	}
-
-	TestOptionalServiceProcess struct {
-		Value *IntWrapper `service:"value" optional:"true"`
-	}
-
-	TestBadOptionalServiceProcess struct {
-		Value *IntWrapper `service:"value" optional:"yup"`
-	}
-
-	SimplePostInjectProcess struct {
-		IValue *IntWrapper `service:"value"`
-		FValue *FloatWrapper
-	}
-
-	ErrorPostInjectProcess struct{}
-
-	RootInjectProcess struct {
-		Services ServiceContainer         `service:"services"`
-		Child    *SimplePostInjectProcess `service:"process"`
-	}
-)
-
-//
-// Fixture Methods
-
-func (p *SimplePostInjectProcess) PostInject() error {
-	p.FValue = &FloatWrapper{float64(p.IValue.val)}
-	return nil
-}
-
-func (p *ErrorPostInjectProcess) PostInject() error {
-	return fmt.Errorf("oops")
-}
-
-func (p *RootInjectProcess) PostInject() error {
-	return p.Services.Inject(p.Child)
+	})
 }

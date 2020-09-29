@@ -1,13 +1,12 @@
 package service
 
 import (
-	"github.com/aphistic/sweet"
-	. "github.com/onsi/gomega"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-type OverlayContainerSuite struct{}
-
-func (s *OverlayContainerSuite) TestGet(t sweet.T) {
+func TestOverlayContainerGet(t *testing.T) {
 	container := NewServiceContainer()
 	container.Set("a", &IntWrapper{10})
 	container.Set("b", &IntWrapper{20})
@@ -19,23 +18,23 @@ func (s *OverlayContainerSuite) TestGet(t sweet.T) {
 	})
 
 	value1, err1 := overlay.Get("a")
-	Expect(err1).To(BeNil())
-	Expect(value1).To(Equal(&IntWrapper{40}))
+	assert.Nil(t, err1)
+	assert.Equal(t, &IntWrapper{40}, value1)
 
 	value2, err2 := overlay.Get("b")
-	Expect(err2).To(BeNil())
-	Expect(value2).To(Equal(&IntWrapper{20}))
+	assert.Nil(t, err2)
+	assert.Equal(t, &IntWrapper{20}, value2)
 
 	value3, err3 := overlay.Get("c")
-	Expect(err3).To(BeNil())
-	Expect(value3).To(Equal(&IntWrapper{30}))
+	assert.Nil(t, err3)
+	assert.Equal(t, &IntWrapper{30}, value3)
 
 	value4, err4 := overlay.Get("d")
-	Expect(err4).To(BeNil())
-	Expect(value4).To(Equal(&IntWrapper{50}))
+	assert.Nil(t, err4)
+	assert.Equal(t, &IntWrapper{50}, value4)
 }
 
-func (s *OverlayContainerSuite) TestInject(t sweet.T) {
+func TestOverlayContainerInject(t *testing.T) {
 	container := NewServiceContainer()
 	container.Set("a", &IntWrapper{10})
 	container.Set("b", &IntWrapper{20})
@@ -48,21 +47,9 @@ func (s *OverlayContainerSuite) TestInject(t sweet.T) {
 
 	obj := &TestOverlayProcess{}
 	err := overlay.Inject(obj)
-	Expect(err).To(BeNil())
-	Expect(obj.A.val).To(Equal(40))
-	Expect(obj.B.val).To(Equal(20))
-	Expect(obj.C.val).To(Equal(30))
-	Expect(obj.D.val).To(Equal(50))
+	assert.Nil(t, err)
+	assert.Equal(t, 40, obj.A.val)
+	assert.Equal(t, 20, obj.B.val)
+	assert.Equal(t, 30, obj.C.val)
+	assert.Equal(t, 50, obj.D.val)
 }
-
-//
-// Fixtures
-
-type (
-	TestOverlayProcess struct {
-		A *IntWrapper `service:"a"`
-		B *IntWrapper `service:"b"`
-		C *IntWrapper `service:"c"`
-		D *IntWrapper `service:"d"`
-	}
-)
