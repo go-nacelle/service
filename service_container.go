@@ -30,15 +30,28 @@ type ServiceContainer interface {
 	Inject(obj interface{}) error
 }
 
+// InjectableServiceKey is an optional interface for service keys.
+//
+// Non-string service key values should implement this interface if they
+// intend to be injected via struct tags.
+type InjectableServiceKey interface {
+	// Tag returns the string version of the key. Two distinct key values
+	// that return the same value from this method should be considered
+	// equivalent within a single service container.
+	Tag() string
+}
+
 type serviceContainer struct {
-	services map[interface{}]interface{}
-	mutex    sync.RWMutex
+	services  map[interface{}]interface{}
+	keysByTag map[string]interface{}
+	mutex     sync.RWMutex
 }
 
 // NewServiceContainer creates an empty service container.
 func NewServiceContainer() ServiceContainer {
 	return &serviceContainer{
-		services: map[interface{}]interface{}{},
+		services:  map[interface{}]interface{}{},
+		keysByTag: map[string]interface{}{},
 	}
 }
 
@@ -48,12 +61,18 @@ func (c *serviceContainer) Get(key interface{}) (interface{}, error) {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 
-	service, ok := c.services[key]
-	if !ok {
-		return nil, fmt.Errorf("no service registered to key `%v`", key)
+	if service, ok := c.services[key]; ok {
+		return service, nil
+	}
+	if tag, ok := tagForKey(key); ok {
+		if key, ok := c.keysByTag[tag]; ok {
+			if service, ok := c.services[key]; ok {
+				return service, nil
+			}
+		}
 	}
 
-	return service, nil
+	return nil, fmt.Errorf("no service registered to key `%v`", key)
 }
 
 // MustGet calls Get and panics on error.
@@ -77,6 +96,10 @@ func (c *serviceContainer) Set(key interface{}, service interface{}) error {
 	}
 
 	c.services[key] = service
+	if tag, ok := tagForKey(key); ok {
+		c.keysByTag[tag] = key
+	}
+
 	return nil
 }
 
@@ -94,4 +117,18 @@ func (c *serviceContainer) MustSet(service interface{}, value interface{}) {
 func (c *serviceContainer) Inject(obj interface{}) error {
 	_, err := inject(c, obj, nil, nil)
 	return err
+}
+
+// tagForKey returns the string version of the given struct key value
+// and a boolean flag indicating such a string's existence.
+func tagForKey(key interface{}) (string, bool) {
+	if k, ok := key.(string); ok {
+		return k, true
+	}
+
+	if k, ok := key.(InjectableServiceKey); ok {
+		return k.Tag(), true
+	}
+
+	return "", false
 }
