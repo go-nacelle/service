@@ -50,7 +50,7 @@ func (c *serviceContainer) Get(key interface{}) (interface{}, error) {
 
 	service, ok := c.services[key]
 	if !ok {
-		return nil, fmt.Errorf("no service registered to key `%s`", key)
+		return nil, fmt.Errorf("no service registered to key `%v`", key)
 	}
 
 	return service, nil
@@ -73,7 +73,7 @@ func (c *serviceContainer) Set(key interface{}, service interface{}) error {
 	defer c.mutex.Unlock()
 
 	if _, ok := c.services[key]; ok {
-		return fmt.Errorf("duplicate service key `%s`", key)
+		return fmt.Errorf("duplicate service key `%v`", key)
 	}
 
 	c.services[key] = service
