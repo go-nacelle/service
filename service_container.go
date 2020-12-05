@@ -11,17 +11,17 @@ import (
 type ServiceContainer interface {
 	// Get retrieves the service registered to the given key. It is an
 	// error for a service not to be registered to this key.
-	Get(key string) (interface{}, error)
+	Get(key interface{}) (interface{}, error)
 
 	// MustGet calls Get and panics on error.
-	MustGet(service string) interface{}
+	MustGet(service interface{}) interface{}
 
 	// Set registers a service with the given key. It is an error for
 	// a service to already be registered to this key.
-	Set(key string, service interface{}) error
+	Set(key interface{}, service interface{}) error
 
 	// MustSet calls Set and panics on error.
-	MustSet(service string, value interface{})
+	MustSet(service interface{}, value interface{})
 
 	// Inject will attempt to populate the given type with values from
 	// the service container based on the value's struct tags. An error
@@ -31,20 +31,20 @@ type ServiceContainer interface {
 }
 
 type serviceContainer struct {
-	services map[string]interface{}
+	services map[interface{}]interface{}
 	mutex    sync.RWMutex
 }
 
 // NewServiceContainer creates an empty service container.
 func NewServiceContainer() ServiceContainer {
 	return &serviceContainer{
-		services: map[string]interface{}{},
+		services: map[interface{}]interface{}{},
 	}
 }
 
 // Get retrieves the service registered to the given key. It is an
 // error for a service not to be registered to this key.
-func (c *serviceContainer) Get(key string) (interface{}, error) {
+func (c *serviceContainer) Get(key interface{}) (interface{}, error) {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 
@@ -57,7 +57,7 @@ func (c *serviceContainer) Get(key string) (interface{}, error) {
 }
 
 // MustGet calls Get and panics on error.
-func (c *serviceContainer) MustGet(service string) interface{} {
+func (c *serviceContainer) MustGet(service interface{}) interface{} {
 	value, err := c.Get(service)
 	if err != nil {
 		panic(err.Error())
@@ -68,7 +68,7 @@ func (c *serviceContainer) MustGet(service string) interface{} {
 
 // Set registers a service with the given key. It is an error for
 // a service to already be registered to this key.
-func (c *serviceContainer) Set(key string, service interface{}) error {
+func (c *serviceContainer) Set(key interface{}, service interface{}) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -81,7 +81,7 @@ func (c *serviceContainer) Set(key string, service interface{}) error {
 }
 
 // MustSet calls Set and panics on error.
-func (c *serviceContainer) MustSet(service string, value interface{}) {
+func (c *serviceContainer) MustSet(service interface{}, value interface{}) {
 	if err := c.Set(service, value); err != nil {
 		panic(err.Error())
 	}
