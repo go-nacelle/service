@@ -289,17 +289,3 @@ func TestServiceContainerGetUnregisteredKey(t *testing.T) {
 	_, err := container.Get("unregistered")
 	assert.EqualError(t, err, "no service registered to key `unregistered`")
 }
-
-func TestServiceContainerMustSetPanics(t *testing.T) {
-	assert.Panics(t, func() {
-		container := NewServiceContainer()
-		container.MustSet("unregistered", struct{}{})
-		container.MustSet("unregistered", struct{}{})
-	})
-}
-
-func TestServiceContainerMustGetPanics(t *testing.T) {
-	assert.Panics(t, func() {
-		NewServiceContainer().MustGet("unregistered")
-	})
-}

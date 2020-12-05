@@ -13,15 +13,9 @@ type ServiceContainer interface {
 	// error for a service not to be registered to this key.
 	Get(key string) (interface{}, error)
 
-	// MustGet calls Get and panics on error.
-	MustGet(service string) interface{}
-
 	// Set registers a service with the given key. It is an error for
 	// a service to already be registered to this key.
 	Set(key string, service interface{}) error
-
-	// MustSet calls Set and panics on error.
-	MustSet(service string, value interface{})
 
 	// Inject will attempt to populate the given type with values from
 	// the service container based on the value's struct tags. An error
@@ -56,16 +50,6 @@ func (c *serviceContainer) Get(key string) (interface{}, error) {
 	return service, nil
 }
 
-// MustGet calls Get and panics on error.
-func (c *serviceContainer) MustGet(service string) interface{} {
-	value, err := c.Get(service)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	return value
-}
-
 // Set registers a service with the given key. It is an error for
 // a service to already be registered to this key.
 func (c *serviceContainer) Set(key string, service interface{}) error {
@@ -78,13 +62,6 @@ func (c *serviceContainer) Set(key string, service interface{}) error {
 
 	c.services[key] = service
 	return nil
-}
-
-// MustSet calls Set and panics on error.
-func (c *serviceContainer) MustSet(service string, value interface{}) {
-	if err := c.Set(service, value); err != nil {
-		panic(err.Error())
-	}
 }
 
 // Inject will attempt to populate the given type with values from
