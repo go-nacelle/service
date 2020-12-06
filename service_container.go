@@ -124,8 +124,8 @@ func (c *serviceContainer) Inject(obj interface{}) error {
 	return err
 }
 
-// TODO - document
-// TODO - test
+// prettyKey returns a human-readable string describing the given
+// service key.
 func prettyKey(key interface{}) string {
 	if tag, ok := tagForKey(key); ok {
 		if _, ok := key.(string); ok {

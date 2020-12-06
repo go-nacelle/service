@@ -389,3 +389,10 @@ func TestServiceContainerDuplicateTags(t *testing.T) {
 	assert.Nil(t, err2)
 	assert.Equal(t, 42, v2)
 }
+
+func TestPrettyServiceKey(t *testing.T) {
+	type testServiceKey1 struct{}
+	assert.Equal(t, `testServiceKey1`, prettyKey(testServiceKey1{}))
+	assert.Equal(t, `testInjectableServiceKey1 ("A")`, prettyKey(testInjectableServiceKey1{}))
+	assert.Equal(t, `"plain"`, prettyKey("plain"))
+}
