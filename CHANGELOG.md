@@ -4,6 +4,10 @@
 
 ## [v1.0.2] - 2020-09-30
 
+### Changed
+
+- Change type of service keys from `string` to `interface{}`. [#4](https://github.com/go-nacelle/service/pull/4)
+
 ### Removed
 
 - Removed dependency on [aphistic/sweet](https://github.com/aphistic/sweet) by rewriting tests to use [testify](https://github.com/stretchr/testify). [#2](https://github.com/go-nacelle/service/pull/2)
