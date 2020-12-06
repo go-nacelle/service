@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
 )
 
@@ -72,7 +73,7 @@ func (c *serviceContainer) Get(key interface{}) (interface{}, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("no service registered to key `%v`", key)
+	return nil, fmt.Errorf("no service registered to key %s", prettyKey(key))
 }
 
 // MustGet calls Get and panics on error.
@@ -92,13 +93,17 @@ func (c *serviceContainer) Set(key interface{}, service interface{}) error {
 	defer c.mutex.Unlock()
 
 	if _, ok := c.services[key]; ok {
-		return fmt.Errorf("duplicate service key `%v`", key)
+		return fmt.Errorf(`duplicate service key %s`, prettyKey(key))
 	}
 
-	c.services[key] = service
 	if tag, ok := tagForKey(key); ok {
+		if _, ok := c.keysByTag[tag]; ok {
+			return fmt.Errorf(`duplicate service key %s`, prettyKey(key))
+		}
+
 		c.keysByTag[tag] = key
 	}
+	c.services[key] = service
 
 	return nil
 }
@@ -117,6 +122,20 @@ func (c *serviceContainer) MustSet(service interface{}, value interface{}) {
 func (c *serviceContainer) Inject(obj interface{}) error {
 	_, err := inject(c, obj, nil, nil)
 	return err
+}
+
+// TODO - document
+// TODO - test
+func prettyKey(key interface{}) string {
+	if tag, ok := tagForKey(key); ok {
+		if _, ok := key.(string); ok {
+			return fmt.Sprintf(`"%s"`, key)
+		}
+
+		return fmt.Sprintf(`%s ("%s")`, reflect.TypeOf(key).Name(), tag)
+	}
+
+	return reflect.TypeOf(key).Name()
 }
 
 // tagForKey returns the string version of the given struct key value
