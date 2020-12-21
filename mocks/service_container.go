@@ -28,7 +28,7 @@ type MockServiceContainer struct {
 func NewMockServiceContainer() *MockServiceContainer {
 	return &MockServiceContainer{
 		GetFunc: &ServiceContainerGetFunc{
-			defaultHook: func(string) (interface{}, error) {
+			defaultHook: func(interface{}) (interface{}, error) {
 				return nil, nil
 			},
 		},
@@ -38,7 +38,7 @@ func NewMockServiceContainer() *MockServiceContainer {
 			},
 		},
 		SetFunc: &ServiceContainerSetFunc{
-			defaultHook: func(string, interface{}) error {
+			defaultHook: func(interface{}, interface{}) error {
 				return nil
 			},
 		},
@@ -65,15 +65,15 @@ func NewMockServiceContainerFrom(i service.ServiceContainer) *MockServiceContain
 // ServiceContainerGetFunc describes the behavior when the Get method of the
 // parent MockServiceContainer instance is invoked.
 type ServiceContainerGetFunc struct {
-	defaultHook func(string) (interface{}, error)
-	hooks       []func(string) (interface{}, error)
+	defaultHook func(interface{}) (interface{}, error)
+	hooks       []func(interface{}) (interface{}, error)
 	history     []ServiceContainerGetFuncCall
 	mutex       sync.Mutex
 }
 
 // Get delegates to the next hook function in the queue and stores the
 // parameter and result values of this invocation.
-func (m *MockServiceContainer) Get(v0 string) (interface{}, error) {
+func (m *MockServiceContainer) Get(v0 interface{}) (interface{}, error) {
 	r0, r1 := m.GetFunc.nextHook()(v0)
 	m.GetFunc.appendCall(ServiceContainerGetFuncCall{v0, r0, r1})
 	return r0, r1
@@ -82,7 +82,7 @@ func (m *MockServiceContainer) Get(v0 string) (interface{}, error) {
 // SetDefaultHook sets function that is called when the Get method of the
 // parent MockServiceContainer instance is invoked and the hook queue is
 // empty.
-func (f *ServiceContainerGetFunc) SetDefaultHook(hook func(string) (interface{}, error)) {
+func (f *ServiceContainerGetFunc) SetDefaultHook(hook func(interface{}) (interface{}, error)) {
 	f.defaultHook = hook
 }
 
@@ -90,7 +90,7 @@ func (f *ServiceContainerGetFunc) SetDefaultHook(hook func(string) (interface{},
 // Get method of the parent MockServiceContainer instance invokes the hook
 // at the front of the queue and discards it. After the queue is empty, the
 // default hook function is invoked for any future action.
-func (f *ServiceContainerGetFunc) PushHook(hook func(string) (interface{}, error)) {
+func (f *ServiceContainerGetFunc) PushHook(hook func(interface{}) (interface{}, error)) {
 	f.mutex.Lock()
 	f.hooks = append(f.hooks, hook)
 	f.mutex.Unlock()
@@ -99,7 +99,7 @@ func (f *ServiceContainerGetFunc) PushHook(hook func(string) (interface{}, error
 // SetDefaultReturn calls SetDefaultDefaultHook with a function that returns
 // the given values.
 func (f *ServiceContainerGetFunc) SetDefaultReturn(r0 interface{}, r1 error) {
-	f.SetDefaultHook(func(string) (interface{}, error) {
+	f.SetDefaultHook(func(interface{}) (interface{}, error) {
 		return r0, r1
 	})
 }
@@ -107,12 +107,12 @@ func (f *ServiceContainerGetFunc) SetDefaultReturn(r0 interface{}, r1 error) {
 // PushReturn calls PushDefaultHook with a function that returns the given
 // values.
 func (f *ServiceContainerGetFunc) PushReturn(r0 interface{}, r1 error) {
-	f.PushHook(func(string) (interface{}, error) {
+	f.PushHook(func(interface{}) (interface{}, error) {
 		return r0, r1
 	})
 }
 
-func (f *ServiceContainerGetFunc) nextHook() func(string) (interface{}, error) {
+func (f *ServiceContainerGetFunc) nextHook() func(interface{}) (interface{}, error) {
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
 
@@ -147,7 +147,7 @@ func (f *ServiceContainerGetFunc) History() []ServiceContainerGetFuncCall {
 type ServiceContainerGetFuncCall struct {
 	// Arg0 is the value of the 1st argument passed to this method
 	// invocation.
-	Arg0 string
+	Arg0 interface{}
 	// Result0 is the value of the 1st result returned from this method
 	// invocation.
 	Result0 interface{}
@@ -274,15 +274,15 @@ func (c ServiceContainerInjectFuncCall) Results() []interface{} {
 // ServiceContainerSetFunc describes the behavior when the Set method of the
 // parent MockServiceContainer instance is invoked.
 type ServiceContainerSetFunc struct {
-	defaultHook func(string, interface{}) error
-	hooks       []func(string, interface{}) error
+	defaultHook func(interface{}, interface{}) error
+	hooks       []func(interface{}, interface{}) error
 	history     []ServiceContainerSetFuncCall
 	mutex       sync.Mutex
 }
 
 // Set delegates to the next hook function in the queue and stores the
 // parameter and result values of this invocation.
-func (m *MockServiceContainer) Set(v0 string, v1 interface{}) error {
+func (m *MockServiceContainer) Set(v0 interface{}, v1 interface{}) error {
 	r0 := m.SetFunc.nextHook()(v0, v1)
 	m.SetFunc.appendCall(ServiceContainerSetFuncCall{v0, v1, r0})
 	return r0
@@ -291,7 +291,7 @@ func (m *MockServiceContainer) Set(v0 string, v1 interface{}) error {
 // SetDefaultHook sets function that is called when the Set method of the
 // parent MockServiceContainer instance is invoked and the hook queue is
 // empty.
-func (f *ServiceContainerSetFunc) SetDefaultHook(hook func(string, interface{}) error) {
+func (f *ServiceContainerSetFunc) SetDefaultHook(hook func(interface{}, interface{}) error) {
 	f.defaultHook = hook
 }
 
@@ -299,7 +299,7 @@ func (f *ServiceContainerSetFunc) SetDefaultHook(hook func(string, interface{}) 
 // Set method of the parent MockServiceContainer instance invokes the hook
 // at the front of the queue and discards it. After the queue is empty, the
 // default hook function is invoked for any future action.
-func (f *ServiceContainerSetFunc) PushHook(hook func(string, interface{}) error) {
+func (f *ServiceContainerSetFunc) PushHook(hook func(interface{}, interface{}) error) {
 	f.mutex.Lock()
 	f.hooks = append(f.hooks, hook)
 	f.mutex.Unlock()
@@ -308,7 +308,7 @@ func (f *ServiceContainerSetFunc) PushHook(hook func(string, interface{}) error)
 // SetDefaultReturn calls SetDefaultDefaultHook with a function that returns
 // the given values.
 func (f *ServiceContainerSetFunc) SetDefaultReturn(r0 error) {
-	f.SetDefaultHook(func(string, interface{}) error {
+	f.SetDefaultHook(func(interface{}, interface{}) error {
 		return r0
 	})
 }
@@ -316,12 +316,12 @@ func (f *ServiceContainerSetFunc) SetDefaultReturn(r0 error) {
 // PushReturn calls PushDefaultHook with a function that returns the given
 // values.
 func (f *ServiceContainerSetFunc) PushReturn(r0 error) {
-	f.PushHook(func(string, interface{}) error {
+	f.PushHook(func(interface{}, interface{}) error {
 		return r0
 	})
 }
 
-func (f *ServiceContainerSetFunc) nextHook() func(string, interface{}) error {
+func (f *ServiceContainerSetFunc) nextHook() func(interface{}, interface{}) error {
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
 
@@ -356,7 +356,7 @@ func (f *ServiceContainerSetFunc) History() []ServiceContainerSetFuncCall {
 type ServiceContainerSetFuncCall struct {
 	// Arg0 is the value of the 1st argument passed to this method
 	// invocation.
-	Arg0 string
+	Arg0 interface{}
 	// Arg1 is the value of the 2nd argument passed to this method
 	// invocation.
 	Arg1 interface{}
