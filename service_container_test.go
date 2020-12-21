@@ -146,7 +146,7 @@ func TestServiceContainerInjectMissingService(t *testing.T) {
 	container := NewServiceContainer()
 	obj := &T2{}
 	err := container.Inject(obj)
-	assert.EqualError(t, err, "no service registered to key `value`")
+	assert.EqualError(t, err, `no service registered to key "value"`)
 }
 
 func TestServiceContainerInjectBadType(t *testing.T) {
@@ -281,25 +281,11 @@ func TestServiceContainerDuplicateRegistration(t *testing.T) {
 	err1 := container.Set("dup", struct{}{})
 	err2 := container.Set("dup", struct{}{})
 	require.Nil(t, err1)
-	assert.EqualError(t, err2, "duplicate service key `dup`")
+	assert.EqualError(t, err2, `duplicate service key "dup"`)
 }
 
 func TestServiceContainerGetUnregisteredKey(t *testing.T) {
 	container := NewServiceContainer()
 	_, err := container.Get("unregistered")
-	assert.EqualError(t, err, "no service registered to key `unregistered`")
-}
-
-func TestServiceContainerMustSetPanics(t *testing.T) {
-	assert.Panics(t, func() {
-		container := NewServiceContainer()
-		container.MustSet("unregistered", struct{}{})
-		container.MustSet("unregistered", struct{}{})
-	})
-}
-
-func TestServiceContainerMustGetPanics(t *testing.T) {
-	assert.Panics(t, func() {
-		NewServiceContainer().MustGet("unregistered")
-	})
+	assert.EqualError(t, err, `no service registered to key "unregistered"`)
 }
