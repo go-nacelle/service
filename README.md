@@ -6,4 +6,4 @@
 
 ---
 
-See the package documentation on [nacelle.dev](https://nacelle.dev/docs/topics/config).
+See the package documentation on [nacelle.dev](https://nacelle.dev/docs/topics/service).
