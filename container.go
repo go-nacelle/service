@@ -27,11 +27,13 @@ func (c *Container) Get(key interface{}) (interface{}, error) {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 
+	// Service exists under key
 	if service, ok := c.services[key]; ok {
 		return service, nil
 	}
 	if tag, ok := tagForKey(key); ok {
 		if key, ok := c.keysByTag[tag]; ok {
+			// Service exists under key with same tag
 			if service, ok := c.services[key]; ok {
 				return service, nil
 			}
@@ -39,6 +41,7 @@ func (c *Container) Get(key interface{}) (interface{}, error) {
 	}
 
 	if c.parent != nil {
+		// Check parent layers
 		return c.parent.Get(key)
 	}
 
@@ -51,21 +54,25 @@ func (c *Container) Set(key, service interface{}) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
+	// Service exists under key
 	if _, ok := c.services[key]; ok {
 		return fmt.Errorf(`duplicate service key %s`, prettyKey(key))
 	}
 
 	tag, ok := tagForKey(key)
 	if ok {
+		// Service exists under key with same tag
 		if _, ok := c.keysByTag[tag]; ok {
 			return fmt.Errorf(`duplicate service key %s`, prettyKey(key))
 		}
 	}
 
 	if c.parent != nil {
+		// Delegate to parent if we're not the root
 		return c.parent.Set(key, service)
 	}
 
+	// We're the root, update both maps
 	c.services[key] = service
 	if ok {
 		c.keysByTag[tag] = key
