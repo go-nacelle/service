@@ -134,11 +134,18 @@ func TestContainerWithValuesDuplicateInjectableServiceKey(t *testing.T) {
 	key1 := testKey1{"dup"}
 	key2 := testKey2{"dup"}
 
+	// One will (non-deterministically) clash with the other
 	_, err := New().WithValues(map[interface{}]interface{}{
 		key1: struct{}{},
 		key2: struct{}{},
 	})
-	assert.EqualError(t, err, `duplicate service key testKey2 ("dup")`)
+
+	expectedErrors := []string{
+		`duplicate service key testKey1 ("dup")`,
+		`duplicate service key testKey2 ("dup")`,
+	}
+	require.NotNil(t, err)
+	assert.Contains(t, expectedErrors, err.Error())
 }
 
 func TestContainerWithValuesSet(t *testing.T) {
