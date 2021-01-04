@@ -34,10 +34,6 @@ func inject(c *Container, obj interface{}, root *reflect.Value, baseIndexPath []
 
 	hasTag := false
 	for i := 0; i < ot.NumField(); i++ {
-		indexPath := make([]int, len(baseIndexPath))
-		copy(indexPath, baseIndexPath)
-		indexPath = append(indexPath, i)
-
 		fieldType := ot.Field(i)
 		fieldValue := (*root).FieldByIndex(indexPath)
 		serviceTag := fieldType.Tag.Get(serviceTag)
@@ -90,6 +86,12 @@ func inject(c *Container, obj interface{}, root *reflect.Value, baseIndexPath []
 	}
 
 	return hasTag, nil
+}
+
+func makePath(base []int, index int) []int {
+	path := make([]int, len(base), len(base)+1)
+	copy(path, base)
+	return append(path, index)
 }
 
 func loadServiceField(container *Container, fieldType reflect.StructField, fieldValue reflect.Value, serviceTag, optionalTag string) error {
