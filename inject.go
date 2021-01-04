@@ -6,26 +6,25 @@ import (
 	"strconv"
 )
 
-// serviceGetter is a subset of a ServiceContainer that only supports the
-// retrieval of a registered service by name.
-type serviceGetter interface {
-	// Get retrieves the service registered to the given key. It is an
-	// error for a service not to be registered to this key.
-	Get(key interface{}) (interface{}, error)
-}
-
-// PostInject is a marker interface for injectable objects which should
-// perform some action after injection of services.
-type PostInject interface {
-	PostInject() error
-}
-
 const (
 	serviceTag  = "service"
 	optionalTag = "optional"
 )
 
-func inject(c serviceGetter, obj interface{}, root *reflect.Value, baseIndexPath []int) (bool, error) {
+// ServiceGetter enables retrieval of a service by a unique service key.
+type ServiceGetter interface {
+	Get(key interface{}) (interface{}, error)
+}
+
+// Inject will attempt to populate the given type with values from the service container based on
+// the value's struct tags. An error may occur if a service has not been registered, a service has
+// a different type than expected, or struct tags are malformed.
+func Inject(c ServiceGetter, obj interface{}) error {
+	_, err := inject(c, obj, nil, nil)
+	return err
+}
+
+func inject(c ServiceGetter, obj interface{}, root *reflect.Value, baseIndexPath []int) (bool, error) {
 	ov := reflect.ValueOf(obj)
 	oi := reflect.Indirect(ov)
 	ot := oi.Type()
@@ -98,7 +97,7 @@ func inject(c serviceGetter, obj interface{}, root *reflect.Value, baseIndexPath
 	return hasTag, nil
 }
 
-func loadServiceField(container serviceGetter, fieldType reflect.StructField, fieldValue reflect.Value, serviceTag, optionalTag string) error {
+func loadServiceField(container ServiceGetter, fieldType reflect.StructField, fieldValue reflect.Value, serviceTag, optionalTag string) error {
 	if !fieldValue.IsValid() {
 		return fmt.Errorf("field '%s' is invalid", fieldType.Name)
 	}
