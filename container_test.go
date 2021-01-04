@@ -250,7 +250,7 @@ type testKey3 struct{ name string }
 func (k testKey1) Tag() string { return k.name }
 func (k testKey2) Tag() string { return k.name }
 
-func assertValue(t *testing.T, container ServiceGetter, key, expected interface{}) {
+func assertValue(t *testing.T, container *Container, key, expected interface{}) {
 	value, err := container.Get(key)
 	require.Nil(t, err)
 	assert.Equal(t, expected, value)
