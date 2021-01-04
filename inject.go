@@ -6,11 +6,6 @@ import (
 	"strconv"
 )
 
-const (
-	serviceTag  = "service"
-	optionalTag = "optional"
-)
-
 // Inject will attempt to populate the given type with values from the service container based on
 // the value's struct tags. An error may occur if a service has not been registered, a service has
 // a different type than expected, or struct tags are malformed.
@@ -18,6 +13,11 @@ func Inject(c *Container, obj interface{}) error {
 	_, err := inject(c, obj, nil, nil)
 	return err
 }
+
+const (
+	serviceTag  = "service"
+	optionalTag = "optional"
+)
 
 func inject(c *Container, obj interface{}, root *reflect.Value, baseIndexPath []int) (bool, error) {
 	ov := reflect.ValueOf(obj)
