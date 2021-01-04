@@ -5,10 +5,14 @@
 ### Changed
 
 - Change type of service keys from `string` to `interface{}`. [#4](https://github.com/go-nacelle/service/pull/4)
+- Replaced the `ServiceContainer` interface with `Container`, a struct with the same name and set of methods. [#7](https://github.com/go-nacelle/service/pull/7)
+- Renamed `NewServiceContainer` to `New`. [#7](https://github.com/go-nacelle/service/pull/7)
+- Renamed `Overlay` to `NewOverlay`. [#7](https://github.com/go-nacelle/service/pull/7)
 
 ### Removed
 
-- Removed MustGet and MustSet methods from the Container interface. [#3](https://github.com/go-nacelle/service/pull/3)
+- Removed `MustGet` and `MustSet` methods from the `Container` interface. [#3](https://github.com/go-nacelle/service/pull/3)
+- Removed mocks package. [#6](https://github.com/go-nacelle/service/pull/6)
 
 ## [v1.0.2] - 2020-09-30
 
