@@ -84,87 +84,19 @@ func TestContainerGetAndSetDuplicateInjectableServiceKey(t *testing.T) {
 }
 
 func TestContainerWithValues(t *testing.T) {
-	type T struct{ val int }
-
-	container1 := New()
-	container1.Set("a", &T{10})
-	container1.Set("b", &T{20})
-	container1.Set("c", &T{30})
-
-	container2, err := container1.WithValues(map[interface{}]interface{}{
-		"a": &T{25},
-		"d": &T{50},
-	})
-	require.Nil(t, err)
-
-	container3, err := container1.WithValues(map[interface{}]interface{}{
-		"b": &T{50},
-		"d": &T{75},
-	})
-	require.Nil(t, err)
-
-	assertValue(t, container1, "a", &T{10})
-	assertValue(t, container1, "b", &T{20})
-	assertValue(t, container1, "c", &T{30})
-
-	assertValue(t, container2, "a", &T{25})
-	assertValue(t, container2, "b", &T{20})
-	assertValue(t, container2, "c", &T{30})
-	assertValue(t, container2, "d", &T{50})
-
-	assertValue(t, container3, "a", &T{10})
-	assertValue(t, container3, "b", &T{50})
-	assertValue(t, container3, "c", &T{30})
-	assertValue(t, container3, "d", &T{75})
+	testContainerWithValues(t, "a", "b", "c", "d")
 }
 
 func TestContainerWithValuesNonStringKey(t *testing.T) {
-	type T struct{ val int }
-
-	key1 := testKey3{"a"}
-	key2 := testKey3{"b"}
-	key3 := testKey3{"c"}
-	key4 := testKey3{"d"}
-
-	container1 := New()
-	container1.Set(key1, &T{10})
-	container1.Set(key2, &T{20})
-	container1.Set(key3, &T{30})
-
-	container2, err := container1.WithValues(map[interface{}]interface{}{
-		key1: &T{25},
-		key4: &T{50},
-	})
-	require.Nil(t, err)
-
-	container3, err := container1.WithValues(map[interface{}]interface{}{
-		key2: &T{50},
-		key4: &T{75},
-	})
-	require.Nil(t, err)
-
-	assertValue(t, container1, key1, &T{10})
-	assertValue(t, container1, key2, &T{20})
-	assertValue(t, container1, key3, &T{30})
-
-	assertValue(t, container2, key1, &T{25})
-	assertValue(t, container2, key2, &T{20})
-	assertValue(t, container2, key3, &T{30})
-	assertValue(t, container2, key4, &T{50})
-
-	assertValue(t, container3, key1, &T{10})
-	assertValue(t, container3, key2, &T{50})
-	assertValue(t, container3, key3, &T{30})
-	assertValue(t, container3, key4, &T{75})
+	testContainerWithValues(t, testKey3{"a"}, testKey3{"b"}, testKey3{"c"}, testKey3{"d"})
 }
 
 func TestContainerWithValuesInjectableServiceKey(t *testing.T) {
-	type T struct{ val int }
+	testContainerWithValues(t, testKey1{"a"}, testKey1{"b"}, testKey1{"c"}, testKey1{"d"})
+}
 
-	key1 := testKey1{"a"}
-	key2 := testKey1{"b"}
-	key3 := testKey1{"c"}
-	key4 := testKey1{"d"}
+func testContainerWithValues(t *testing.T, key1, key2, key3, key4 interface{}) {
+	type T struct{ val int }
 
 	container1 := New()
 	container1.Set(key1, &T{10})
