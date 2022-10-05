@@ -20,7 +20,7 @@ func TestWithAndFromContext(t *testing.T) {
 		container.Set("a", &T1{10})
 
 		ctx := context.Background()
-		ctx = WithContext(ctx, container)
+		ctx = WithContainer(ctx, container)
 
 		ctxContainer := FromContext(ctx)
 		require.NotNil(t, ctxContainer)

@@ -6,7 +6,7 @@ type containerKeyType struct{}
 
 var containerKey = containerKeyType{}
 
-func WithContext(ctx context.Context, container *Container) context.Context {
+func WithContainer(ctx context.Context, container *Container) context.Context {
 	return context.WithValue(ctx, containerKey, container)
 }
 
